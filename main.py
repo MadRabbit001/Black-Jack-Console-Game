@@ -14,7 +14,8 @@ game_actions = {
     "is_won": False,
     "is_break": False,
     "keep_play": True,
-    "who_wins": ""
+    "who_wins": "",
+    "is_split": False
 }
 
 my_str = "                                      .------.\n                   .------.           |A .   |\n                   |A_  _ |    .------; / \  |\n                   |( \/ )|-----. _   |(_,_) |\n                   | \  / | /\  |( )  |  I  A|\n                   |  \/ A|/  \ |_x_) |------'\n                   `-----+'\  / | Y  A|\n                         |  \/ A|-----'\n                         `------'"
@@ -28,15 +29,18 @@ def give_start_cards():
         player_cards.append(curr_rand_card)
     elif len(computer_cards) < 2:
         computer_cards.append(curr_rand_card)
+    full_deck_cards[curr_rand_sign].remove(curr_rand_card)
 
 
 def draw_card(pl_or_pc):
     curr_rand_sign = random.choice(list(full_deck_cards.keys()))
     curr_rand_card = random.choice(full_deck_cards[curr_rand_sign])
-    if pl_or_pc:
+    if pl_or_pc == 1:
         player_cards.append(curr_rand_card)
-    else:
+    elif pl_or_pc == 0:
         computer_cards.append(curr_rand_card)
+    full_deck_cards[curr_rand_sign].remove(curr_rand_card)
+    return curr_rand_card
 
 
 def cards_value(pl_or_pc):
@@ -88,7 +92,39 @@ def show_image(card_list):
     return temp_list
 
 
+def split_cards(pl_cards):
+    continue_play = True
+    first_split = [pl_cards[0], draw_card(2)]
+    while continue_play:
+        if cards_value(first_split) > 21:
+            continue_play = False
+        elif input("") == "y":
+            first_split.append(draw_card(2))
+        else:
+            continue_play = False
+    continue_play = True
+    second_split = [pl_cards[1], draw_card(2)]
+    while continue_play:
+        if cards_value(second_split) > 21:
+            continue_play = False
+        elif input("") == "y":
+            second_split.append(draw_card(2))
+        else:
+            continue_play = False
+
+
+def check_split_option(card_list):
+    if 10 < card_list[0] < 14 and 10 < card_list[1] < 14:
+        return True
+    return False
+
+
 def start_game():
+    if len(computer_cards) == 2 and len(player_cards) == 2 and check_split_option(player_cards):
+        if input("wanna split hand? y/n  ") == "y":
+            game_actions["is_split"] = True
+            # split_cards(player_cards)
+
     if game_actions["keep_play"]:
         if not game_actions["is_won"]:
             if len(computer_cards) < 2 or len(player_cards) < 2:
@@ -109,7 +145,7 @@ def start_game():
                         return
             if len(player_cards) >= 2 and not game_actions["is_break"] and input(
                     "Draw Card? y/n  ").lower() == "y":
-                draw_card(True)
+                draw_card(1)
                 start_game()
                 return
             elif len(player_cards) >= 2 and not game_actions["is_break"]:
@@ -137,7 +173,7 @@ def start_game():
                         start_game()
                         return
                 elif 16 > cards_value(False) and cards_value(False) < cards_value(True):
-                    draw_card(False)
+                    draw_card(0)
                     start_game()
                     return
                 elif cards_value(False) > 21:
