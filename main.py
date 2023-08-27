@@ -3,10 +3,10 @@ import random
 # BLACK JACK GAME
 
 full_deck_cards = {
-    "hearts": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-    "diamonds": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-    "clubs": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-    "spades": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+    "hearts": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+    "diamonds": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+    "clubs": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+    "spades": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
 }
 player_cards = []
 computer_cards = []
@@ -47,14 +47,20 @@ def cards_value(pl_or_pc):
     temp_val = 0
     if pl_or_pc:
         for card in player_cards:
-            if card > 10:
-                card = 10
-            temp_val += card
+            if card == 14:
+                temp_val += 11
+            elif 14 > card > 10:
+                temp_val += 10
+            else:
+                temp_val += card
     else:
         for card in computer_cards:
-            if card > 10:
-                card = 10
-            temp_val += card
+            if card == 14:
+                temp_val += 11
+            elif 14 > card > 10:
+                temp_val += 10
+            else:
+                temp_val += card
     return temp_val
 
 
@@ -64,15 +70,22 @@ def check_for_ace(my_list, pl_or_pc):
     for card in my_list:
         if card == 14:
             index.append(my_list.index(card))
-    if 1 <= len(index) == count and cards_value(True) > 21:
-        count += 1
-        for i in range(len(index)):
-            if pl_or_pc:
+    if pl_or_pc:
+        if 1 <= len(index) <= count and cards_value(True) > 21:
+            print("changed ace value from 11 -> 1: ", my_list)
+            count += 1
+            for i in range(len(index)):
                 player_cards[i] = 1
-            else:
+                check_for_ace(my_list, pl_or_pc)
+                break
+    else:
+        if 1 <= len(index) <= count and cards_value(False) > 21:
+            print("changed ace value from 11 -> 1: ", my_list)
+            count += 1
+            for i in range(len(index)):
                 computer_cards[i] = 1
-            check_for_ace(my_list, pl_or_pc)
-            break
+                check_for_ace(my_list, pl_or_pc)
+                break
     return
 
 
@@ -120,7 +133,7 @@ def check_split_option(card_list):
 
 
 def start_game():
-    if len(computer_cards) == 2 and len(player_cards) == 2 and check_split_option(player_cards):
+    if len(computer_cards) == 2 and len(player_cards) == 2 and check_split_option(player_cards) and 1 == 0:
         if input("wanna split hand? y/n  ") == "y":
             game_actions["is_split"] = True
             # split_cards(player_cards)
@@ -133,16 +146,20 @@ def start_game():
                 start_game()
                 return
             if not game_actions["is_break"] and cards_value(True) < 22:
-                print(show_image(player_cards), [show_image(computer_cards)[0], "X"])
+                print(show_image(player_cards), [show_image(computer_cards)[0], "X"],
+                      f"pl_val: {cards_value(True)} {player_cards}", f"pc_val: {cards_value(False)} {computer_cards}")
             if cards_value(True) > 21:
                 check_for_ace(player_cards, True)
                 if cards_value(True) > 21:
-                    print(show_image(player_cards), show_image(computer_cards))
+                    print(show_image(player_cards), show_image(computer_cards),
+                          f"pl_val: {cards_value(True)} {player_cards}",
+                          f"pc_val: {cards_value(False)} {computer_cards}")
                     game_actions["who_wins"] = "Computer Wins!"
                     game_actions["is_won"] = True
                     if game_actions["is_won"]:
                         start_game()
                         return
+            print(game_actions["is_break"])
             if len(player_cards) >= 2 and not game_actions["is_break"] and input(
                     "Draw Card? y/n  ").lower() == "y":
                 draw_card(1)
@@ -152,26 +169,39 @@ def start_game():
                 game_actions["is_break"] = True
             if game_actions["is_break"]:
                 if cards_value(True) < cards_value(False) < 22:
-                    print(show_image(player_cards), show_image(computer_cards))
-                    game_actions["who_wins"] = "Computer Wins!"
-                    game_actions["is_won"] = True
-                    if game_actions["is_won"]:
-                        start_game()
-                        return
+                    print(show_image(player_cards), show_image(computer_cards),
+                          f"pl_val: {cards_value(True)} {player_cards}",
+                          f"pc_val: {cards_value(False)} {computer_cards}")
+                    check_for_ace(player_cards, True)
+                    if cards_value(True) < cards_value(False) < 22:
+                        game_actions["who_wins"] = "Computer Wins!"
+                        game_actions["is_won"] = True
+                        if game_actions["is_won"]:
+                            start_game()
+                            return
                 if cards_value(True) == cards_value(False):
-                    print(show_image(player_cards), show_image(computer_cards))
-                    game_actions["who_wins"] = "It's a Draw!"
-                    game_actions["is_won"] = True
-                    if game_actions["is_won"]:
-                        start_game()
-                        return
+                    check_for_ace(player_cards, True)
+                    check_for_ace(computer_cards, False)
+                    if cards_value(True) == cards_value(False):
+                        print(show_image(player_cards), show_image(computer_cards),
+                              f"pl_val: {cards_value(True)} {player_cards}",
+                              f"pc_val: {cards_value(False)} {computer_cards}")
+                        game_actions["who_wins"] = "It's a Draw!"
+                        game_actions["is_won"] = True
+                        if game_actions["is_won"]:
+                            start_game()
+                            return
                 elif 16 < cards_value(False) < cards_value(True):
-                    print(show_image(player_cards), show_image(computer_cards))
-                    game_actions["who_wins"] = "Player Wins!"
-                    game_actions["is_won"] = True
-                    if game_actions["is_won"]:
-                        start_game()
-                        return
+                    check_for_ace(computer_cards, False)
+                    if 16 < cards_value(False) < cards_value(True):
+                        print(show_image(player_cards), show_image(computer_cards),
+                              f"pl_val: {cards_value(True)} {player_cards}",
+                              f"pc_val: {cards_value(False)} {computer_cards}")
+                        game_actions["who_wins"] = "Player Wins!"
+                        game_actions["is_won"] = True
+                        if game_actions["is_won"]:
+                            start_game()
+                            return
                 elif 16 > cards_value(False) and cards_value(False) < cards_value(True):
                     draw_card(0)
                     start_game()
@@ -179,12 +209,16 @@ def start_game():
                 elif cards_value(False) > 21:
                     check_for_ace(computer_cards, False)
                     if cards_value(False) > 21:
-                        print(show_image(player_cards), show_image(computer_cards))
-                        game_actions["who_wins"] = "Player Wins!"
-                        game_actions["is_won"] = True
-                        if game_actions["is_won"]:
-                            start_game()
-                            return
+                        check_for_ace(computer_cards, False)
+                        if cards_value(False) > 21:
+                            print(show_image(player_cards), show_image(computer_cards),
+                                  f"pl_val: {cards_value(True)} {player_cards}",
+                                  f"pc_val: {cards_value(False)} {computer_cards}")
+                            game_actions["who_wins"] = "Player Wins!"
+                            game_actions["is_won"] = True
+                            if game_actions["is_won"]:
+                                start_game()
+                                return
         else:
             print(game_actions["who_wins"])
             if input("Wanna Play Again? y/n  ").lower() == 'y':
