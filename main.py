@@ -232,7 +232,7 @@ def start_game():
                 game_actions["is_won"] = False
                 game_actions["who_wins"] = ""
                 game_actions["keep_play"] = True
-                # game_actions["is_game_started"] = True
+                game_actions["is_game_started"] = True
                 start_game()
                 return
             else:
