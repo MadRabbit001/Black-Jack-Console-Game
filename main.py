@@ -15,11 +15,12 @@ game_actions = {
     "is_break": False,
     "keep_play": True,
     "who_wins": "",
-    "is_split": False
+    "is_split": False,
+    "is_game_started": True
 }
 
 my_str = "                                      .------.\n                   .------.           |A .   |\n                   |A_  _ |    .------; / \  |\n                   |( \/ )|-----. _   |(_,_) |\n                   | \  / | /\  |( )  |  I  A|\n                   |  \/ A|/  \ |_x_) |------'\n                   `-----+'\  / | Y  A|\n                         |  \/ A|-----'\n                         `------'"
-print(my_str)
+
 
 
 def give_start_cards():
@@ -133,6 +134,9 @@ def check_split_option(card_list):
 
 
 def start_game():
+    if game_actions["is_game_started"]:
+        print(my_str)
+        game_actions["is_game_started"] = False
     if len(computer_cards) == 2 and len(player_cards) == 2 and check_split_option(player_cards) and 1 == 0:
         if input("wanna split hand? y/n  ") == "y":
             game_actions["is_split"] = True
@@ -228,6 +232,7 @@ def start_game():
                 game_actions["is_won"] = False
                 game_actions["who_wins"] = ""
                 game_actions["keep_play"] = True
+                game_actions["is_game_started"] = True
                 start_game()
                 return
             else:
